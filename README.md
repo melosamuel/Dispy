@@ -1,3 +1,3 @@
-# RPG Bot for Discord - Dispy
+# Dispy
 
-A simple Discord bot that plays RPG with you.
+My up-to-date Discord API wrapper.
