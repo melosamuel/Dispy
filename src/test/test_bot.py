@@ -1,4 +1,11 @@
-import discord, pytest 
+from dotenv import load_dotenv
+import discord, os, pytest
+
+load_dotenv()
+
+GUILD_ID = os.getenv("GUILD_ID")
+TOKEN = os.getenv("TOKEN")
+bot = discord.Bot()
 
 @pytest.fixture
 def init():
@@ -12,8 +19,6 @@ def init():
 @pytest.fixture
 def on_ready(init):
     client = init
-
-    print(f"Logged in as {client.user}")
 
     return client
 
