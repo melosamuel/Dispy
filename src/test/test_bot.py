@@ -25,4 +25,4 @@ def on_ready(init):
 def test_bot(on_ready):
     client = on_ready
 
-    assert client, "Could not initialize the bot, please check your code!"
+    assert client, "Could not initialize bot!"
