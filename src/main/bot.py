@@ -73,9 +73,8 @@ class RPGCog(commands.Cog):
             await interaction.response.send_message(f"``` You've selected {choice}! ```", ephemeral=True)
 
             job = jobs[f"{choice}"]
-            hero = Hero(name, age, choice, 0, 0, job["dexterity"], job["defense"], job["hp"], job["strength"], job["wisdom"])
 
-            cursor.execute("INSERT INTO heroes (user, name, age, job, level, xp, defense, dexterity, hp, strength, wisdom) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (player[0], hero.get_name(), hero.get_age(), hero.get_job(), hero.get_level(), hero.get_xp(), hero.get_defense(), hero.get_dexterity(), hero.get_hp(), hero.get_strength(), hero.get_wisdom()))
+            cursor.execute("INSERT INTO heroes (user, name, age, job, level, xp, defense, dexterity, hp, strength, wisdom) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (player[0], name, age, choice, 0, 0, job["defense"], job["dexterity"], job["hp"], job["strength"], job["wisdom"]))
 
             time.sleep(1)
 
@@ -110,7 +109,7 @@ class RPGCog(commands.Cog):
             await ctx.send("``` This JSON file is malformatted. Please, see: ``` [How to add stories](https://github.com/melosamuel/Dispy/blob/master/README.md)")
             return
 
-        if 'name' not in data or 'description' not in data or 'progresses' not in data:
+        if 'name' not in data or 'resume' not in data or 'progresses' not in data:
             await ctx.send("```The correct JSON file must have 'name', 'description' and 'progresses' fields. ```")
             return
 
