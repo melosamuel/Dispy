@@ -33,7 +33,7 @@ def __init__():
     CREATE TABLE IF NOT EXISTS stories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(60) UNIQUE,
-        description VARCHAR NOT NULL
+        resume VARCHAR NOT NULL
     )            
     ''')
 
@@ -51,7 +51,7 @@ def __init__():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         progress_id INTEGER NOT NULL,
         title VARCHAR NOT NULL,
-        description VARCHAR NOT NULL,
+        response VARCHAR NOT NULL,
         FOREIGN KEY (progress_id) REFERENCES progress (id)
     )            
     ''')

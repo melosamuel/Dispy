@@ -156,6 +156,7 @@ cython_debug/
 
 # sql3lite
 *.db
+*.db-journal
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
