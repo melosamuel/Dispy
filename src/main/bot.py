@@ -2,6 +2,7 @@ from discord import ui
 from discord.ext import commands
 
 import discord
+import json
 import sqlite3
 import time
 
@@ -21,6 +22,9 @@ async def on_ready():
     log.info("Bot started")
 
 class RPGCog(commands.Cog):
+    username: str
+    user_id: int
+
     def __init__(self, bot) -> None:
         self.bot = bot
 
@@ -107,6 +111,64 @@ class RPGCog(commands.Cog):
             view.add_item(button)
 
         await ctx.send(f"**Select your class**", view=view)
+
+    @commands.command(name="add_story", help="Add a new Story")
+    async def add_story(self, ctx: discord.ApplicationContext):
+        if not ctx.message.attachments:
+            await ctx.send("```Append a JSON file. See the bot guide if you need help.``` [How to add stories](https://github.com/melosamuel/Dispy/blob/master/README.md)")
+            
+            return 
+        
+        uploaded_json = ctx.message.attachments[0]
+        
+        if not uploaded_json.filename.endswith('.json'):
+            await ctx.send("```The file must be a valid JSON. ```")
+            
+            return
+        
+        json_content = await uploaded_json.read()
+
+        try:
+            data = json.loads(json_content)
+
+        except json.JSONDecodeError:
+            await ctx.send("```This JSON file is malformatted. Please, see: ``` [How to add stories](https://github.com/melosamuel/Dispy/blob/master/README.md)")
+            
+            return
+
+        if 'name' not in data or 'synopsis' not in data or 'progresses' not in data:
+            await ctx.send("```The correct JSON file must have 'name', 'synopsis' and 'progresses' fields.```")
+            
+            return
+
+        conn = sqlite3.connect('rpg.db')
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute('INSERT INTO story (name, synopsis) VALUES (?, ?)', (data['name'], data['synopsis']))
+            story_id = cursor.lastrowid
+
+        except sqlite3.IntegrityError:
+            await ctx.send(f"Story {data['name'].title()} already registered.")
+            conn.close()
+
+            return
+        
+        for progress in data['progresses']:
+            cursor.execute('INSERT INTO progress (id, story_id, description) VALUES (?, ?, ?)', (progress["id"], story_id, progress['description']))
+            progress_id = cursor.lastrowid
+
+            try:
+                for choice in progress['choices']:
+                    cursor.execute('INSERT INTO choice (progress_id, value, title, response) VALUES (?, ?, ?, ?)', (progress_id, choice["value"], choice['title'], choice['response']))
+            
+            except KeyError:
+                continue
+
+        conn.commit()
+        conn.close()
+
+        await ctx.send(f"```Story '{data['name'].title()}' successfully added.```")
 
 bot.add_cog(RPGCog(bot))
 
