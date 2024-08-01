@@ -5,18 +5,17 @@ def __init__():
     cursor = conn.cursor()
 
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS players (
+    CREATE TABLE IF NOT EXISTS user (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username VARCHAR UNIQUE       
+        name VARCHAR UNIQUE       
     )               
     ''')
 
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS heroes (
+    CREATE TABLE IF NOT EXISTS character (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
         name VARCHAR(30) UNIQUE,
-        age BIT NOT NULL,
         job VARCHAR(15) NOT NULL,
         level TINYINT NOT NULL,
         xp SMALLINT NOT NULL,
@@ -25,21 +24,21 @@ def __init__():
         hp DOUBLE(4, 2) NOT NULL,
         strength DOUBLE(4, 2) NOT NULL,
         wisdom DOUBLE(4, 2)   NOT NULL,    
-        FOREIGN KEY (user) REFERENCES players (id)    
+        FOREIGN KEY (user_id) REFERENCES user (id)    
     )               
     ''')
 
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS stories (
+    CREATE TABLE IF NOT EXISTS story (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name VARCHAR(60) UNIQUE,
-        resume VARCHAR NOT NULL
+        synopsis VARCHAR NOT NULL
     )            
     ''')
 
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS progress (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id INTEGER PRIMARY KEY,
         story_id INTEGER NOT NULL,
         description VARCHAR NOT NULL,
         FOREIGN KEY (story_id) REFERENCES stories (id)
@@ -47,9 +46,10 @@ def __init__():
     ''')
 
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS choices (
+    CREATE TABLE IF NOT EXISTS choice (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         progress_id INTEGER NOT NULL,
+        value VARCHAR NOT NULL,
         title VARCHAR NOT NULL,
         response VARCHAR NOT NULL,
         FOREIGN KEY (progress_id) REFERENCES progress (id)
@@ -57,9 +57,23 @@ def __init__():
     ''')
 
     cursor.execute('''
+    CREATE TABLE IF NOT EXISTS user_progress (
+        user_id INTEGER,
+        story_id INTEGER,
+        progress_id INTEGER,
+        character_id INTEGER,
+        PRIMARY KEY (user_id, story_id),
+        FOREIGN KEY (user_id) REFERENCES user (id),
+        FOREIGN KEY (story_id) REFERENCES story (id),
+        FOREIGN KEY (progress_id) REFERENCES progress (id),
+        FOREIGN KEY (character_id) REFERENCES character (id)
+    )            
+    ''')
+
+    cursor.execute('''
     CREATE TABLE IF NOT EXISTS invetory (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        hero_id INTEGER NOT NULL,
+        character_id INTEGER NOT NULL,
         title VARCHAR(30) NULL,
         description VARCHAR NULL,
         add_level TINYINT NULL,
@@ -74,7 +88,21 @@ def __init__():
         strength_multiplier DOUBLE(4, 2) NULL,
         add_wisdom DOUBLE(4, 2) NULL,  
         wisdom_multiplier DOUBLE(4, 2) NULL,
-        FOREIGN KEY (hero_id) REFERENCES heroes (id)
+        FOREIGN KEY (character_id) REFERENCES character (id)
+    )            
+    ''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS play_now (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        story_id VARCHAR NOT NULL,
+        progress_id INTEGER NOT NULL,
+        character_id VARCHAR NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES user (id),
+        FOREIGN KEY (story_id) REFERENCES sotry (id)
+        FOREIGN KEY (progress_id) REFERENCES progress (id),
+        FOREIGN KEY (character_id) REFERENCES character (id)
     )            
     ''')
 

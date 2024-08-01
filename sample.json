@@ -1,34 +1,41 @@
 {
     "name": "riddles",
-    "resume": "You are a curious explorer known for finding hidden treasures and solving riddles. One day, while walking through the enchanted forest, you encounter a gleaming bird that speaks in riddles.",
+    "synopsis": "You are a curious explorer known for finding hidden treasures and solving riddles. One day, while walking through the enchanted forest, you encounter a gleaming bird that speaks in riddles.",
     "progresses": [
         {
+            "id": 1,
             "description": "The bird says to you: \"To find the treasure you seek, you must first solve my riddle: 'What has roots that nobody sees, is taller than trees, and climbs, climbs, but never grows?'\"",
             "choices": [
                 {
+                    "value": 0,
                     "title": "answer 'mountain'",
                     "response": "The bird smiles and says: \"Very well! The treasure is near. Follow the left path at the upcoming fork.\""
                 },
                 {
+                    "value": 1,
                     "title": "answer 'river'",
                     "response": "The bird frowns and says: \"Wrong answer. But I will give you another chance. The treasure can still be yours if you find the old sage of the forest. But you must defeat me first!\""
                 }
             ]
         },
         {
-            "description": "You arrive at you arrive at a fork with two paths. You must choose wisely",
+            "id": 2,
+            "description": "You arrive at a fork with two paths. You must choose wisely",
             "choices": [
                 {
+                    "value": 2,
                     "title": "follow the left path",
                     "response": "You find a treasure chest buried under a giant tree. Upon opening it, you discover an ancient map leading to an unknown kingdom. Since you're a foreigner, you was made slave and now your life is gone."
                 },
                 {
+                    "value": 0,
                     "title": "follow the right path",
                     "response": "You end up in a field full of magical flowers that emit a hypnotic melody. The flowers are actually guardians of the treasure, and they lead you to a hidden cave filled with gold and jewels."
                 }
             ]
         },
         {
+            "id": 3,
             "description": "With the treasure in hand, you, become a legend among explorers. Many others come to try their luck, but few have the success you did. Now, a new mystery awaits you, but that is a story for another day..."
         }
     ]
