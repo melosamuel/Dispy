@@ -2,7 +2,7 @@ from pathlib import Path
 
 import random
 
-def jobs():
+def classes():
     options = {
         "🔥 Mage": {"strength": random.randint(10, 30), "dexterity": random.randint(30, 50), "defense": random.randint(20, 40), "wisdom": random.randint(80, 100), "hp": random.randint(50, 70)},
         "⚔️ Warrior": {"strength": random.randint(70, 90), "dexterity": random.randint(50, 70), "defense": random.randint(60, 80), "wisdom": random.randint(20, 40), "hp": random.randint(90, 110)},

@@ -16,7 +16,7 @@ def __init__():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         name VARCHAR(30) UNIQUE,
-        job VARCHAR(15) NOT NULL,
+        class VARCHAR(15) NOT NULL,
         level TINYINT NOT NULL,
         xp SMALLINT NOT NULL,
         defense DOUBLE(4, 2) NOT NULL,
