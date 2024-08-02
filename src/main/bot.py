@@ -8,8 +8,10 @@ import time
 
 from db import __init__
 
-from models.User import User
 from models.Character import Character
+from models.Story import Story
+from models.User import User
+
 
 import config
 import utils
@@ -27,11 +29,13 @@ async def on_ready():
 class RPGCog(commands.Cog):
     user: User
     character: Character
+    story: Story
 
     def __init__(self, bot) -> None:
         self.bot = bot
         self.user = None
         self.character = None
+        self.story = None
 
     @commands.command(name="registration", help="Starts user registration")
     async def registration(self, ctx: discord.ApplicationContext):
@@ -203,7 +207,6 @@ class RPGCog(commands.Cog):
 
         if not characters_exist:
             await ctx.send("```You don't have characters to play with. Type !add_character```")
-            conn.close()
 
             return
         
@@ -223,6 +226,52 @@ class RPGCog(commands.Cog):
             view.add_item(button)
 
         await ctx.send(f"**Select your class**", view=view)
+
+    @commands.command(name="select_story", help="Selects a story to play")
+    async def select_story(self, ctx: discord.ApplicationContext):
+        username = ctx.author.name.lower() if not self.user else self.user.get_name()
+
+        conn = sqlite3.connect("rpg.db")
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT * FROM user WHERE name == ?", (username,))
+        user_exists = cursor.fetchone()
+
+        if not user_exists:
+            await ctx.send("```You're not registered. Type !registration```")
+            conn.close()
+
+            return
+        
+        if not self.user:
+            self.user = User(user_exists[0], user_exists[1])
+
+        cursor.execute("SELECT * FROM story")
+        stories_exists = cursor.fetchall()
+
+        conn.close()
+
+        if not stories_exists:
+            await ctx.send("```There are no stories to play.```")
+
+            return
+        
+        buttons = [ui.Button(label=story[1].title(), custom_id=story[1]) for story in stories_exists]
+        view = ui.View()
+
+        async def callback(interaction: discord.Interaction):
+            selected = interaction.data['custom_id']
+            await interaction.response.send_message(f"```You've selected {selected.title()}!```", ephemeral=True)
+
+            for story in stories_exists:
+                if story[1] == selected:
+                    self.story = Story(story[0], story[1], story[2])
+
+        for button in buttons:    
+            button.callback = callback
+            view.add_item(button)
+
+        await ctx.send(f"**Select a story to play**", view=view)
 
 bot.add_cog(RPGCog(bot))
 
