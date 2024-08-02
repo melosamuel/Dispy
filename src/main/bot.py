@@ -8,6 +8,9 @@ import time
 
 from db import __init__
 
+from models.User import User
+from models.Character import Character
+
 import config
 import utils
 
@@ -22,29 +25,32 @@ async def on_ready():
     log.info("Bot started")
 
 class RPGCog(commands.Cog):
-    username: str
-    user_id: int
+    user: User
+    character: Character
 
     def __init__(self, bot) -> None:
         self.bot = bot
+        self.user = None
+        self.character = None
 
     @commands.command(name="registration", help="Starts user registration")
     async def registration(self, ctx: discord.ApplicationContext):
-        self.username = ctx.author.name.lower()
 
         conn = sqlite3.connect("rpg.db")
         cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM user WHERE name == ?", (self.username,))
+        cursor.execute("SELECT * FROM user WHERE name == ?", (ctx.author.name.lower(),))
         user_exists = cursor.fetchone()
 
         if user_exists:
             await ctx.send("```You're already registered. ```")
             conn.close()
 
+            self.user = User(user_exists[0], user_exists[1])
+
             return
         
-        cursor.execute("INSERT INTO user (name) VALUES (?)", (self.username,))
+        cursor.execute("INSERT INTO user (name) VALUES (?)", (ctx.author.name.lower(),))
 
         await ctx.send("```User successfully registered!```")
 
@@ -53,12 +59,12 @@ class RPGCog(commands.Cog):
 
     @commands.command(name="add_character", help="Add a new user's character")
     async def add_character(self, ctx: discord.ApplicationContext):
-        self.username = ctx.author.name.lower()
+        username = ctx.author.name.lower() if not self.user else self.user.name
 
         conn = sqlite3.connect("rpg.db")
         cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM user WHERE name == ?", (self.username,))
+        cursor.execute("SELECT * FROM user WHERE name == ?", (username,))
         user_exists = cursor.fetchone()
 
         if not user_exists:
@@ -67,7 +73,8 @@ class RPGCog(commands.Cog):
 
             return
         
-        self.user_id = user_exists[0]
+        if not self.user:
+            self.user = User(user_exists[0], user_exists[1])
 
         await ctx.send("```Name your character```")
         name = await bot.wait_for("message", check=lambda message: message.author == ctx.author and message.channel == ctx.channel)
@@ -99,7 +106,7 @@ class RPGCog(commands.Cog):
             conn = sqlite3.connect("rpg.db")
             cursor = conn.cursor()
 
-            cursor.execute("INSERT INTO character (user_id, name, class, level, xp, defense, dexterity, hp, strength, wisdom) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (self.user_id, name, selected, 0, 0, character_class["defense"], character_class["dexterity"], character_class["hp"], character_class["strength"], character_class["wisdom"]))
+            cursor.execute("INSERT INTO character (user_id, name, class, level, xp, defense, dexterity, hp, strength, wisdom) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (self.user.get_id(), name, selected, 0, 0, character_class["defense"], character_class["dexterity"], character_class["hp"], character_class["strength"], character_class["wisdom"]))
 
             conn.commit()
             conn.close()
@@ -169,6 +176,53 @@ class RPGCog(commands.Cog):
         conn.close()
 
         await ctx.send(f"```Story '{data['name'].title()}' successfully added.```")
+
+    @commands.command(name="select_character", help="Selects a character to play with")
+    async def select_character(self, ctx: discord.ApplicationContext):
+        username = ctx.author.name.lower() if not self.user else self.user.get_name()
+
+        conn = sqlite3.connect("rpg.db")
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT * FROM user WHERE name == ?", (username,))
+        user_exists = cursor.fetchone()
+
+        if not user_exists:
+            await ctx.send("```You're not registered. Type !registration```")
+            conn.close()
+
+            return
+        
+        if not self.user:
+            self.user = User(user_exists[0], user_exists[1])
+
+        cursor.execute("SELECT * FROM character WHERE user_id == ?", (self.user.get_id(),))
+        characters_exist = cursor.fetchall()
+
+        conn.close()
+
+        if not characters_exist:
+            await ctx.send("```You don't have characters to play with. Type !add_character```")
+            conn.close()
+
+            return
+        
+        buttons = [ui.Button(label=character[2].title(), custom_id=character[2]) for character in characters_exist]
+        view = ui.View()
+
+        async def callback(interaction: discord.Interaction):
+            selected = interaction.data['custom_id']
+            await interaction.response.send_message(f"```You've selected {selected.title()}!```", ephemeral=True)
+
+            for character in characters_exist:
+                if character[2] == selected:
+                    self.character = Character(character[2], character[3], character[4], character[5], character[6], character[8], character[7], character[9], character[10])
+
+        for button in buttons:    
+            button.callback = callback
+            view.add_item(button)
+
+        await ctx.send(f"**Select your class**", view=view)
 
 bot.add_cog(RPGCog(bot))
 
